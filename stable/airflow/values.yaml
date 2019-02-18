@@ -128,6 +128,13 @@ airflow:
   ##     type: aws
   ##     extra: '{"aws_access_key_id": "**********", "aws_secret_access_key": "***", "region_name":"eu-central-1"}'
   connections: {}
+  ##
+  ## Annotations for the Web and Scheduler Pods
+  pod:
+    annotations:
+      ## Example:
+      ## iam.amazonaws.com/role: airflow-Role
+
 ##
 ## Workers configuration
 workers:
