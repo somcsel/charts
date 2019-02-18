@@ -68,6 +68,7 @@ spec:
           {{- end }}
       {{- end }}
       containers:
+        {{- include "airflow.syncSidecar" . | indent 6 }}
         - name: {{ .Chart.Name }}-worker
           imagePullPolicy: {{ .Values.airflow.image.pullPolicy }}
           image: "{{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}"
@@ -86,7 +87,7 @@ spec:
               mountPath: {{ $secretsDir }}/{{ . }}
               subPath: {{ . }}
           {{- end }}
-          {{- if .Values.persistence.enabled }}
+          {{- if or .Values.persistence.enabled .Values.dags.syncSidecar.enabled }}
             - name: dags-data
               mountPath: {{ .Values.dags.path }}
           {{- else if .Values.dags.initContainer.enabled }}

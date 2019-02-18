@@ -106,3 +106,18 @@ Map environment vars to secrets
       {{- end }}
     {{- end }}
 {{- end }}
+
+
+{{/*
+A sidecar container for syncing dags
+*/}}
+{{- define "airflow.syncSidecar" -}}
+  {{- if .Values.dags.syncSidecar.enabled }}
+  - name: {{ .Chart.Name }}-sync-sidecar
+    image: {{ .Values.dags.syncSidecar.image.repository }}:{{ .Values.dags.syncSidecar.image.tag }}
+    imagePullPolicy: {{ .Values.dags.syncSidecar.image.pullPolicy}}
+    volumeMounts:
+      - name: dags-data
+        mountPath: {{ .Values.dags.path }}
+  {{- end }}
+{{- end }}

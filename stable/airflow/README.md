@@ -244,6 +244,34 @@ Example of procedure:
   are well installed (for example consuming a `requirements.txt` in your `Dockerfile`)
 - Update the value of `airflow.image` in your `values.yaml` and deploy on your Kubernetes cluster
 
+### Use a Sync Sidecar
+
+If you set `dags.syncSidecar.enabled` to `true` a sidecar container will be run inside the Pods that
+require access to the DAGs (Web, Scheduler and Workers).
+
+You provide the container image for the sidecar; it's responsibility is to populate the DAGs folder.
+Set `dags.syncSidecar.image.repository` and `dags.syncSidecar.image.tag` to identify your image.
+
+Using a sidecar has the advantage that changes to DAGs are reflected without restarting any Pods.
+
+Below is a sample Dockerfile for a sidecar container that syncs DAGs from an S3 bucket every 5
+minutes.
+
+```
+FROM python:2-alpine
+
+RUN pip install awscli
+
+ARG S3PATH="s3://my_bucket/my_dags/"
+ARG LOCALPATH="/usr/local/airflow/dags"
+ARG SCHEDULE="*/5 * * * *"
+
+RUN mkdir -p $LOCALPATH
+RUN echo "$SCHEDULE aws s3 sync $S3PATH $LOCALPATH > /proc/1/fd/1 2>/proc/1/fd/2" > /etc/crontabs/root
+
+CMD ["crond", "-f", "-d", "8"]
+```
+
 ## Logs
 
 You can store Airflow logs on an external volume and mount this volume inside Airflow pods.
@@ -315,6 +343,10 @@ The following table lists the configurable parameters of the Airflow chart and t
 | `dags.git.url`                           | url to clone the git repository                         | nil                       |
 | `dags.git.ref`                           | branch name, tag or sha1 to reset to                    | `master`                  |
 | `dags.git.secret`                        | name of a secret containing an ssh deploy key           | nil                       |
+| `dags.syncSidecar.enabled`               | Run a sidecar container to sync dags                    | `false`                   |
+| `dags.syncSidecar.image.repository`      | Sync sidecar container image                            | `sbdp/s3sync`             |
+| `dags.syncSidecar.image.tag`             | Sync sidecar container image tag                        | `20190215-1540`           |
+| `dags.syncSidecar.image.pullPolicy`      | Sync sidecar container image pull policy                | `IfNotPresent`            |
 | `logs.path`                              | mount path for logs persistent volume                   | `/usr/local/airflow/logs` |
 | `rbac.create`                            | create RBAC resources                                   | `true`                    |
 | `serviceAccount.create`                  | create a service account                                | `true`                    |

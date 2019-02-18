@@ -355,6 +355,18 @@ dags:
       pullPolicy: IfNotPresent
     ## install requirements.txt dependencies automatically
     installRequirements: true
+  syncSidecar:
+    ## Sync dags (e.g. from object storage)
+    enabled: false
+    ## Image for the sync sidecar
+    image:
+      ## Image repository
+      repository: sbdp/s3sync
+      ## Image tag
+      tag: 20190215-1540
+      ## Image pull policy
+      ## values: Always or IfNotPresent
+      pullPolicy: IfNotPresent
 
 ##
 ## Configure logs
